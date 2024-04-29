@@ -103,6 +103,95 @@ for i = 1:300
 
 end
 
+
+for i = 1:100
+
+test_theta = linspace(deg2rad(1), deg2rad(80), 100)
+         test_const = const;
+         test_const.theta_i = test_theta(i);
+         
+
+
+        %% Determing initial conditions based on constants
+        Vol_air_i = test_const.Vol_bottle - test_const.Vol_w_i; %
+        m_air_i = (Vol_air_i * test_const.p_r_i)/(test_const.R_air * test_const.T_i); % mass of air at launch.
+        m_r_i = test_const.m_bottle + test_const.row_w * test_const.Vol_w_i + m_air_i; % mass of rocket at launch;
+        timespan = [0,5];
+        %% creating initial state vector From initial Conditions.
+        state_i = [test_const.x_i; 0; test_const.z_i; 0; m_r_i; Vol_air_i; m_air_i];
+        %% Running ODE45
+        state = [];
+        [t,state] = ode45(@(t,state) OdeFun(t,state,test_const,m_air_i), timespan, state_i);
+        theta_dist_chart(i) = max(state(:,1));
+
+end
+figure()
+plot(rad2deg(test_theta),theta_dist_chart)
+%% Commented out to test for imaginary numbers
+% for i = 1:100
+% 
+% test_pressure = linspace(const.p_amb + 1, 80 * 6874, 100)
+%          test_const = const;
+%          test_const.p_r_i = test_pressure(i);
+% 
+% 
+% 
+%         %% Determing initial conditions based on constants
+%         Vol_air_i = test_const.Vol_bottle - test_const.Vol_w_i; %
+%         m_air_i = (Vol_air_i * test_const.p_r_i)/(test_const.R_air * test_const.T_i); % mass of air at launch.
+%         m_r_i = test_const.m_bottle + test_const.row_w * test_const.Vol_w_i + m_air_i; % mass of rocket at launch;
+%         timespan = [0,5];
+%         %% creating initial state vector From initial Conditions.
+%         state_i = [test_const.x_i; 0; test_const.z_i; 0; m_r_i; Vol_air_i; m_air_i];
+%         %% Running ODE45
+%         state = [];
+%         [t,state] = ode45(@(t,state) OdeFun(t,state,test_const,m_air_i), timespan, state_i);
+%         pressure_dist_chart(i) = max(state(:,1));
+% 
+% end
+figure()
+%plot(test_pressure,pressure_dist_chart)
+
+for i = 1:100
+
+test_water = linspace(0+0.0000001, const.Vol_bottle, 100)
+         test_const = const;
+         test_const.Vol_w_i = test_water(i);
+         
+
+
+        %% Determing initial conditions based on constants
+        Vol_air_i = test_const.Vol_bottle - test_const.Vol_w_i; %
+        m_air_i = (Vol_air_i * test_const.p_r_i)/(test_const.R_air * test_const.T_i); % mass of air at launch.
+        m_r_i = test_const.m_bottle + test_const.row_w * test_const.Vol_w_i + m_air_i; % mass of rocket at launch;
+        timespan = [0,5];
+        %% creating initial state vector From initial Conditions.
+        state_i = [test_const.x_i; 0; test_const.z_i; 0; m_r_i; Vol_air_i; m_air_i];
+        %% Running ODE45
+        state = [];
+        [t,state] = ode45(@(t,state) OdeFun(t,state,test_const,m_air_i), timespan, state_i);
+        water_dist_chart(i) = max(state(:,1));
+
+end
+figure()
+plot(test_water,water_dist_chart)
+
+
+        test_const = const;
+        %test_const.p_r_i = 446255;
+
+        Vol_air_i = test_const.Vol_bottle - test_const.Vol_w_i; %
+        m_air_i = (Vol_air_i * test_const.p_r_i)/(test_const.R_air * test_const.T_i); % mass of air at launch.
+        m_r_i = test_const.m_bottle + test_const.row_w * test_const.Vol_w_i + m_air_i; % mass of rocket at launch;
+        timespan = [0,5];
+        %% creating initial state vector From initial Conditions.
+        state_i = [test_const.x_i; 0; test_const.z_i; 0; m_r_i; Vol_air_i; m_air_i];
+        %% Running ODE45
+        state = [];
+        [t,state] = ode45(@(t,state) OdeFun(t,state,test_const,m_air_i), timespan, state_i);
+        water_dist_chart(i) = max(state(:,1));
+
+
 timevector = 1:length(distance_test);
 
 figure()
@@ -123,7 +212,7 @@ title('Water Mass')
 const.p_r_i / 6894.76
 
 figure()
-plot(timevector, step.theta)
+plot(timevector, step.water)
 
 %% Finding the Force Values with Thrust Function that mimics OdeFun
 % Thrust() is a modified OdeFun that returns thrust and phase rather than
