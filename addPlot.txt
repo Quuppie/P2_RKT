@@ -1,0 +1,16 @@
+timevector = 1:length(distance_test);
+
+figure()
+hold on;
+title('Delta Parameters')
+subplot(3,1,1)
+plot(timevector,delta_dist(:,1))
+title('Launch Angle')
+
+subplot(3,1,2)
+plot(timevector,delta_dist(:,2))
+title('Pressure of Air')
+
+subplot(3,1,3)
+plot(timevector,delta_dist(:,3))
+title('Water Mass')
