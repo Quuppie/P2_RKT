@@ -111,7 +111,7 @@ end
 
 for i = 1:100
 
-test_theta = linspace(deg2rad(1), deg2rad(80), 100)
+test_theta = linspace(deg2rad(1), deg2rad(80), 100);
          test_const = const;
          test_const.theta_i = test_theta(i);
          
@@ -134,7 +134,7 @@ end
 % Commented out to test for imaginary numbers
 for i = 1:100
 
-test_pressure = linspace(const.p_amb + 1, 80 * 6874, 100)
+test_pressure = linspace(const.p_amb + 1, 80 * 6874, 100);
          test_const = const;
          test_const.p_r_i = test_pressure(i);
 
@@ -153,6 +153,7 @@ test_pressure = linspace(const.p_amb + 1, 80 * 6874, 100)
         pressure_dist_chart(i) = max(state(:,1));
 
 end
+
 figure()
 plot(test_pressure,pressure_dist_chart)
 title 'Evolution of Pressure with Time'
@@ -181,9 +182,22 @@ end
 
 
 
-        test_const = const;
-        %test_const.p_r_i = 446255;
+%% NESTING TEST (For Surf)
+%Theta is the outer (vertical), pressure inner (horizontal), nxn
+n = 20
 
+%Theta versus pressure
+for i = 1:n
+    test_theta_surf = linspace(deg2rad(1), deg2rad(80), n);
+    test_pressure_surf = linspace(const.p_amb + 1, 80 * 6874, n);
+        for j = 1:n
+         test_const = const;
+         test_const.theta_i = test_theta_surf(i);
+         test_const.p_r_i = test_pressure_surf(j);
+
+         %Have defined both, for i and j
+
+        %% Determing initial conditions based on constants
         Vol_air_i = test_const.Vol_bottle - test_const.Vol_w_i; %
         m_air_i = (Vol_air_i * test_const.p_r_i)/(test_const.R_air * test_const.T_i); % mass of air at launch.
         m_r_i = test_const.m_bottle + test_const.row_w * test_const.Vol_w_i + m_air_i; % mass of rocket at launch;
@@ -193,7 +207,103 @@ end
         %% Running ODE45
         state = [];
         [t,state] = ode45(@(t,state) OdeFun(t,state,test_const,m_air_i), timespan, state_i);
-        water_dist_chart(i) = max(state(:,1));
+        surf_dist_chart_tp(i,j) = max(state(:,1));
+
+
+        end 
+end
+
+%Now water versus theta!
+n = 20
+
+for i = 1:n
+
+    test_theta_surf = linspace(deg2rad(1), deg2rad(80), n);
+    test_water_surf = linspace(0+0.0000001, const.Vol_bottle, n);
+        for j = 1:n
+         test_const = const;
+         test_const.theta_i = test_theta_surf(i);
+         test_const.Vol_w_i = test_water_surf(j);
+
+         %Have defined both, for i and j
+
+        %% Determing initial conditions based on constants
+        Vol_air_i = test_const.Vol_bottle - test_const.Vol_w_i; %
+        m_air_i = (Vol_air_i * test_const.p_r_i)/(test_const.R_air * test_const.T_i); % mass of air at launch.
+        m_r_i = test_const.m_bottle + test_const.row_w * test_const.Vol_w_i + m_air_i; % mass of rocket at launch;
+        timespan = [0,5];
+        %% creating initial state vector From initial Conditions.
+        state_i = [test_const.x_i; 0; test_const.z_i; 0; m_r_i; Vol_air_i; m_air_i];
+        %% Running ODE45
+        state = [];
+        [t,state] = ode45(@(t,state) OdeFun(t,state,test_const,m_air_i), timespan, state_i);
+        surf_dist_chart_tw(i,j) = max(state(:,1));
+
+
+        end 
+end
+
+%Water and Pressure
+for i = 1:n
+
+    test_water_surf = linspace(0+0.0000001, const.Vol_bottle, n);
+    test_pressure_surf = linspace(const.p_amb + 1, 80 * 6874, n);
+
+        for j = 1:n
+         test_const = const;
+         test_const.Vol_w_i = test_water_surf(i);
+         test_const.p_r_i = test_pressure_surf(j);
+
+         %Have defined both, for i and j
+
+        %% Determing initial conditions based on constants
+        Vol_air_i = test_const.Vol_bottle - test_const.Vol_w_i; %
+        m_air_i = (Vol_air_i * test_const.p_r_i)/(test_const.R_air * test_const.T_i); % mass of air at launch.
+        m_r_i = test_const.m_bottle + test_const.row_w * test_const.Vol_w_i + m_air_i; % mass of rocket at launch;
+        timespan = [0,5];
+        %% creating initial state vector From initial Conditions.
+        state_i = [test_const.x_i; 0; test_const.z_i; 0; m_r_i; Vol_air_i; m_air_i];
+        %% Running ODE45
+        state = [];
+        [t,state] = ode45(@(t,state) OdeFun(t,state,test_const,m_air_i), timespan, state_i);
+        surf_dist_chart_wp(i,j) = max(state(:,1));
+
+
+        end 
+end
+
+%% Plotting the Surface!
+%Theta vs Pressure
+figure()
+surf(real(test_theta_surf),real(test_pressure_surf),real(surf_dist_chart_tp));
+title 'Testing Shenanigans'
+xlabel 'Theta'
+ylabel 'Pressure'
+zlabel 'Distance of Rocket'
+
+%Theta vs Water - THE COOL ONE!!
+figure()
+surf(rad2deg(real(test_theta_surf)),real(test_water_surf)*1000,real(surf_dist_chart_tw),'FaceAlpha',0.9);
+view([45 22])
+Z = ones(size(surf_dist_chart_tw))*85;
+hold on
+% patch([0,0,5,5],[-1,-1,1,1],[85,85,85,85],'w','FaceAlpha',0.7);
+% surf(real(test_theta_surf),real(test_water_surf),Z);
+title 'A 3D Slice of the Design Space: Water-Theta'
+xlabel 'Theta (rad)'
+ylabel 'Water Mass'
+zlabel 'Distance of Rocket'
+
+print ('topographic_theta_water', '-dpng', '-r300')
+
+%Water vs Pressure
+figure()
+surf(real(test_water_surf),real(test_pressure_surf),real(surf_dist_chart_wp));
+title 'Testing Shenanigans'
+xlabel 'Water'
+ylabel 'Pressure'
+zlabel 'Distance of Rocket'
+
 
 
 timevector = 1:length(distance_test);
@@ -228,17 +338,6 @@ plot(rad2deg(test_theta),theta_dist_chart)
 xlabel 'Launch Angle (deg)'
 ylabel 'Distance Traveled'
 title 'Variation of Distance with Launch Angle'
-
-figure()
-grid on
-plot3(rad2deg(test_theta),test_water,theta_dist_chart)
-hold on 
-plot3(test_water,rad2deg(test_theta),water_dist_chart)
-xlabel 'Launch Angle (deg)'
-ylabel 'Mass of Water'
-zlabel 'Distance Traveled'
-title 'Variation of Distance with Launch Angle'
-
 
 % surf_dist = [water_dist_chart',theta_dist_chart'];
 % surf(test_water',test_theta',surf_dist);
